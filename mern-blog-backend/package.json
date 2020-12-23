@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "npx nodemon --exec npx babel-node src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,6 +16,7 @@
   "devDependencies": {
     "@babel/core": "^7.12.10",
     "@babel/node": "^7.12.10",
-    "@babel/preset-env": "^7.12.10"
+    "@babel/preset-env": "^7.12.10",
+    "nodemon": "^2.0.6"
   }
 }
