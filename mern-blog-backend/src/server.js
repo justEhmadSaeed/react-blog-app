@@ -17,19 +17,42 @@ app.get("/api/articles/:name", async (req, res) => {
 			.collection("articles")
 			.findOne({ name: articleName })
 
-		res.status(500).json(articleInfo)
+		res.status(200).json(articleInfo)
 		client.close()
 	} catch (error) {
 		res.status(500).json({ message: "Error Connecting to db ", error })
 	}
 })
 
-app.post("/api/articles/:name/upvote", (req, res) => {
-	const articleName = req.params.name
-	articleInfo[articleName].upvotes++
-	res
-		.status(200)
-		.send(`${articleName} now has ${articleInfo[articleName].upvotes} upvotes.`)
+app.post("/api/articles/:name/upvote", async (req, res) => {
+	try {
+		const articleName = req.params.name
+		const client = await MongoClient.connect("mongodb://localhost:27017", {
+			useUnifiedTopology: true,
+		})
+		const db = client.db("my-blog")
+
+		const articleInfo = await db
+			.collection("articles")
+			.findOne({ name: articleName })
+
+		await db.collection("articles").updateOne(
+			{ name: articleName },
+			{
+				$set: {
+					upvotes: articleInfo.upvotes + 1,
+				},
+			}
+		)
+		const updatedInfo = await db
+			.collection("articles")
+			.findOne({ name: articleName })
+
+		res.status(200).json(updatedInfo)
+		client.close()
+	} catch (error) {
+		res.status(500).json({ message: "Error Connecting to db ", error })
+	}
 })
 app.post("/api/articles/:name/comment", (req, res) => {
 	const { username, comment } = req.body
