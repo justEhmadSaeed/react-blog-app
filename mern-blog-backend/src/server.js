@@ -4,34 +4,33 @@ import { MongoClient } from "mongodb"
 const app = express()
 
 app.use(express.json())
-
-app.get("/api/articles/:name", async (req, res) => {
+const withDB = async (operations, res) => {
 	try {
-		const articleName = req.params.name
 		const client = await MongoClient.connect("mongodb://localhost:27017", {
 			useUnifiedTopology: true,
 		})
 		const db = client.db("my-blog")
+		await operations(db)
 
-		const articleInfo = await db
-			.collection("articles")
-			.findOne({ name: articleName })
-
-		res.status(200).json(articleInfo)
 		client.close()
 	} catch (error) {
 		res.status(500).json({ message: "Error Connecting to db ", error })
 	}
+}
+app.get("/api/articles/:name", async (req, res) => {
+	const articleName = req.params.name
+	withDB(async (db) => {
+		const articleInfo = await db
+			.collection("articles")
+			.findOne({ name: articleName })
+		res.status(200).json(articleInfo)
+	}, res)
 })
 
 app.post("/api/articles/:name/upvote", async (req, res) => {
-	try {
-		const articleName = req.params.name
-		const client = await MongoClient.connect("mongodb://localhost:27017", {
-			useUnifiedTopology: true,
-		})
-		const db = client.db("my-blog")
+	const articleName = req.params.name
 
+	withDB(async (db) => {
 		const articleInfo = await db
 			.collection("articles")
 			.findOne({ name: articleName })
@@ -49,10 +48,7 @@ app.post("/api/articles/:name/upvote", async (req, res) => {
 			.findOne({ name: articleName })
 
 		res.status(200).json(updatedInfo)
-		client.close()
-	} catch (error) {
-		res.status(500).json({ message: "Error Connecting to db ", error })
-	}
+	}, res)
 })
 app.post("/api/articles/:name/comment", (req, res) => {
 	const { username, comment } = req.body
