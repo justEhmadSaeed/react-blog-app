@@ -1,7 +1,10 @@
 import express from "express"
 import { MongoClient } from "mongodb"
+import path from "path"
 
 const app = express()
+
+app.use(express.static(path.join(__dirname, "/build")))
 
 app.use(express.json())
 const withDB = async (operations, res) => {
@@ -71,5 +74,9 @@ app.post("/api/articles/:name/comment", (req, res) => {
 
 		res.status(200).json(updatedInfo)
 	}, res)
+})
+
+app.get("*", (req, res) => {
+	res.sendFile(path.join(__dirname + "/build/index.html"))
 })
 app.listen(8000, () => console.log("Listening on Port 8000"))
