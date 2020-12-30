@@ -1,8 +1,7 @@
 "use strict"
-import express from "express"
-import { MongoClient } from "mongodb"
-import path from "path"
-import serverless from "serverless-http"
+const express = require("express")
+const MongoClient = require("mongodb")
+const path = require("path")
 
 const app = express()
 const router = express.Router()
@@ -11,7 +10,7 @@ app.use(express.static(path.join(__dirname, "/build")))
 
 app.use(express.json())
 
-const withDB = async (operations, res) => {
+async function withDB(operations, res) {
 	try {
 		const client = await MongoClient.connect(
 			"mongodb://ehmad:ehmadmongodb@cluster0-shard-00-00.h8jjg.mongodb.net:27017,cluster0-shard-00-01.h8jjg.mongodb.net:27017,cluster0-shard-00-02.h8jjg.mongodb.net:27017/my-blog?ssl=true&replicaSet=atlas-12d7lj-shard-0&authSource=admin&retryWrites=true&w=majority",
@@ -27,9 +26,9 @@ const withDB = async (operations, res) => {
 		res.status(500).json({ message: "Error Connecting to db ", error })
 	}
 }
-router.get("/:name", async (req, res) => {
+app.get("/api/articles/:name", function (req, res) {
 	const articleName = req.params.name
-	withDB(async (db) => {
+	withDB(async function (db) {
 		const articleInfo = await db
 			.collection("articles")
 			.findOne({ name: articleName })
@@ -37,10 +36,10 @@ router.get("/:name", async (req, res) => {
 	}, res)
 })
 
-router.post("/:name/upvote", async (req, res) => {
+app.post("/api/articles/:name/upvote", function (req, res) {
 	const articleName = req.params.name
 
-	withDB(async (db) => {
+	withDB(async function (db) {
 		const articleInfo = await db
 			.collection("articles")
 			.findOne({ name: articleName })
@@ -60,10 +59,10 @@ router.post("/:name/upvote", async (req, res) => {
 		res.status(200).json(updatedInfo)
 	}, res)
 })
-router.post("/:name/comment", (req, res) => {
+app.post("/api/articles/:name/comment", function (req, res) {
 	const { username, comment } = req.body
 	const articleName = req.params.name
-	withDB(async (db) => {
+	withDB(async function (db) {
 		const articleInfo = await db
 			.collection("articles")
 			.findOne({ name: articleName })
@@ -83,11 +82,8 @@ router.post("/:name/comment", (req, res) => {
 	}, res)
 })
 
-router.get("*", (req, res) => {
+app.get("*", (req, res) => {
 	res.sendFile(path.join(__dirname + "/build/index.html"))
 })
-app.use("/api/articles", router)
 
-app.use("./netlify/functions/server", router)
-module.exports.handler = serverless(app)
-app.listen(8000, () => console.log("Listening on Port 8000"))
+app.listen(process.env.PORT || 8000, () => console.log("Listening on Port 8000"))

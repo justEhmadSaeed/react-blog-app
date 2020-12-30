@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npx nodemon --exec npx babel-node src/server.js",
-    "build":"netlify-lambda build src",
+    "start": "nodemon src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -16,11 +15,6 @@
     "mongodb": "^3.6.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.10",
-    "@babel/node": "^7.12.10",
-    "@babel/preset-env": "^7.12.10",
-    "netlify-lambda": "^2.0.2",
-    "nodemon": "^2.0.6",
-    "serverless-http": "^2.6.0"
+    "nodemon": "^2.0.6"
   }
 }
