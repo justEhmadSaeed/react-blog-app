@@ -1,17 +1,24 @@
+"use strict"
 import express from "express"
 import { MongoClient } from "mongodb"
 import path from "path"
+import serverless from "serverless-http"
 
 const app = express()
+const router = express.Router()
 
 app.use(express.static(path.join(__dirname, "/build")))
 
 app.use(express.json())
+
 const withDB = async (operations, res) => {
 	try {
-		const client = await MongoClient.connect("mongodb://localhost:27017", {
-			useUnifiedTopology: true,
-		})
+		const client = await MongoClient.connect(
+			"mongodb://ehmad:ehmadmongodb@cluster0-shard-00-00.h8jjg.mongodb.net:27017,cluster0-shard-00-01.h8jjg.mongodb.net:27017,cluster0-shard-00-02.h8jjg.mongodb.net:27017/my-blog?ssl=true&replicaSet=atlas-12d7lj-shard-0&authSource=admin&retryWrites=true&w=majority",
+			{
+				useUnifiedTopology: true,
+			}
+		)
 		const db = client.db("my-blog")
 		await operations(db)
 
@@ -20,7 +27,7 @@ const withDB = async (operations, res) => {
 		res.status(500).json({ message: "Error Connecting to db ", error })
 	}
 }
-app.get("/api/articles/:name", async (req, res) => {
+router.get("/:name", async (req, res) => {
 	const articleName = req.params.name
 	withDB(async (db) => {
 		const articleInfo = await db
@@ -30,7 +37,7 @@ app.get("/api/articles/:name", async (req, res) => {
 	}, res)
 })
 
-app.post("/api/articles/:name/upvote", async (req, res) => {
+router.post("/:name/upvote", async (req, res) => {
 	const articleName = req.params.name
 
 	withDB(async (db) => {
@@ -53,7 +60,7 @@ app.post("/api/articles/:name/upvote", async (req, res) => {
 		res.status(200).json(updatedInfo)
 	}, res)
 })
-app.post("/api/articles/:name/comment", (req, res) => {
+router.post("/:name/comment", (req, res) => {
 	const { username, comment } = req.body
 	const articleName = req.params.name
 	withDB(async (db) => {
@@ -76,7 +83,11 @@ app.post("/api/articles/:name/comment", (req, res) => {
 	}, res)
 })
 
-app.get("*", (req, res) => {
+router.get("*", (req, res) => {
 	res.sendFile(path.join(__dirname + "/build/index.html"))
 })
+app.use("/api/articles", router)
+
+app.use("./netlify/functions/server", router)
+module.exports.handler = serverless(app)
 app.listen(8000, () => console.log("Listening on Port 8000"))
