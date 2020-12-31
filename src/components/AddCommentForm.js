@@ -22,7 +22,7 @@ const AddCommentForm = ({ articleName, setArticleInfo }) => {
 	return (
 		<div id="add-comment-form">
 			<label>
-				Name:
+				<h4>Name:</h4>
 				<input
 					type="text"
 					value={username}
@@ -30,7 +30,7 @@ const AddCommentForm = ({ articleName, setArticleInfo }) => {
 				/>
 			</label>
 			<label>
-				Comment:
+				<h4>Comment:</h4>
 				<textarea
 					rows="4"
 					cols="50"

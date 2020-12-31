@@ -11,7 +11,7 @@ mern-blog-backend/node_modules
 .eslintcache
 # production
 /build
-
+mern-blog-backend/src/build
 # misc
 .DS_Store
 .env.local

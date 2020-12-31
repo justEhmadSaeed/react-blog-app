@@ -4,7 +4,6 @@ const MongoClient = require("mongodb")
 const path = require("path")
 
 const app = express()
-const router = express.Router()
 
 app.use(express.static(path.join(__dirname, "/build")))
 
